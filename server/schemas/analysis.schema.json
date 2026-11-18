@@ -1,0 +1,355 @@
+
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "PlatePal Shared Analysis Contract",
+    "description": "Shared data contract for React, Express, ADK, and Firestore.",
+    "oneOf": [
+        { "$ref": "#/definitions/analysisRequest" },
+        { "$ref": "#/definitions/analysisResponse" },
+        { "$ref": "#/definitions/apiError" }
+    ],
+    "definitions": {
+        "schemaVersion": {
+            "type": "string",
+            "const": "1.0.0"
+        },
+        "companionStyle": {
+            "type": "string",
+            "enum": ["casual", "strict", "athlete"]
+        },
+        "photo": {
+            "type": "object",
+            "required": ["source", "mimeType", "data"],
+            "properties": {
+                "source": {
+                    "enum": ["local", "google_photos"]
+                },
+                "mimeType": {
+                    "enum": [
+                        "image/jpeg",
+                        "image/png",
+                        "image/webp"
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "minLength": 1,
+                    "contentEncoding": "base64"
+                }
+            },
+            "additionalProperties": false
+        },
+        "audio": {
+            "type": "object",
+            "required": ["mimeType", "data", "durationSeconds"],
+            "properties": {
+                "mimeType": {
+                    "enum": [
+                        "audio/mpeg",
+                        "audio/mp4",
+                        "audio/wav",
+                        "audio/webm",
+                        "audio/ogg",
+                        "audio/x-wav"
+                    ]
+                },
+                "data": {
+                    "type": "string",
+                    "minLength": 1,
+                    "contentEncoding": "base64"
+                },
+                "durationSeconds": {
+                    "type": "number",
+                    "exclusiveMinimum": 0,
+                    "maximum": 60
+                }
+            },
+            "additionalProperties": false
+        },
+        "quantity": {
+            "type": "object",
+            "required": ["amount", "unit"],
+            "properties": {
+                "amount": {
+                    "type": "number",
+                    "exclusiveMinimum": 0
+                },
+                "unit": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "estimatedMacros": {
+            "type": "object",
+            "required": [
+                "calories",
+                "proteinGrams",
+                "carbohydrateGrams",
+                "fatGrams"
+            ],
+            "properties": {
+                "calories": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "proteinGrams": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "carbohydrateGrams": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "fatGrams": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
+        "food": {
+            "type": "object",
+            "required": [
+                "foodId",
+                "name",
+                "quantity",
+                "estimatedMacros",
+                "corrected"
+            ],
+            "properties": {
+                "foodId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "name": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "quantity": {
+                    "$ref": "#/definitions/quantity"
+                },
+                "estimatedMacros": {
+                    "$ref": "#/definitions/estimatedMacros"
+                },
+                "corrected": {
+                    "type": "boolean"
+                }
+            },
+            "additionalProperties": false
+        },
+        "conflict": {
+            "type": "object",
+            "required": [
+                "conflictId",
+                "foodId",
+                "imageObservation",
+                "audioAssertion",
+                "resolved"
+            ],
+            "properties": {
+                "conflictId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "foodId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "imageObservation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "audioAssertion": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "resolved": {
+                    "type": "boolean"
+                },
+                "resolution": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "if": {
+                "properties": {
+                    "resolved": { "const": true }
+                }
+            },
+            "then": {
+                "required": ["resolution"]
+            },
+            "additionalProperties": false
+        },
+        "correction": {
+            "type": "object",
+            "required": [
+                "foodId",
+                "previousName",
+                "correctedName",
+                "previousQuantity",
+                "correctedQuantity"
+            ],
+            "properties": {
+                "foodId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "previousName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "correctedName": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "previousQuantity": {
+                    "$ref": "#/definitions/quantity"
+                },
+                "correctedQuantity": {
+                    "$ref": "#/definitions/quantity"
+                }
+            },
+            "additionalProperties": false
+        },
+        "analysisRequest": {
+            "type": "object",
+            "required": [
+                "schemaVersion",
+                "photo",
+                "companionStyle"
+            ],
+            "properties": {
+                "schemaVersion": {
+                    "$ref": "#/definitions/schemaVersion"
+                },
+                "photo": {
+                    "$ref": "#/definitions/photo"
+                },
+                "audio": {
+                    "$ref": "#/definitions/audio"
+                },
+                "companionStyle": {
+                    "$ref": "#/definitions/companionStyle"
+                }
+            },
+            "additionalProperties": false
+        },
+        "analysisResponse": {
+            "type": "object",
+            "required": [
+                "schemaVersion",
+                "analysisId",
+                "createdAt",
+                "foods",
+                "imageEvidence",
+                "audioAssertions",
+                "conflicts",
+                "uncertainties",
+                "estimatedMacros",
+                "macroStatus",
+                "recommendation",
+                "companionStyle",
+                "reviewed",
+                "corrected",
+                "corrections"
+            ],
+            "properties": {
+                "schemaVersion": {
+                    "$ref": "#/definitions/schemaVersion"
+                },
+                "analysisId": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                },
+                "foods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/food"
+                    }
+                },
+                "imageEvidence": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "audioAssertions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "conflicts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/conflict"
+                    }
+                },
+                "uncertainties": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "estimatedMacros": {
+                    "$ref": "#/definitions/estimatedMacros"
+                },
+                "macroStatus": {
+                    "enum": ["estimated", "pending_recalculation"]
+                },
+                "recommendation": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "companionStyle": {
+                    "$ref": "#/definitions/companionStyle"
+                },
+                "reviewed": {
+                    "type": "boolean"
+                },
+                "corrected": {
+                    "type": "boolean"
+                },
+                "corrections": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/correction"
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "apiError": {
+            "type": "object",
+            "required": ["error"],
+            "properties": {
+                "schemaVersion": {
+                    "$ref": "#/definitions/schemaVersion"
+                },
+                "error": {
+                    "type": "object",
+                    "required": ["code", "message"],
+                    "properties": {
+                        "code": {
+                            "type": "string",
+                            "minLength": 1
+                        },
+                        "message": {
+                            "type": "string",
+                            "minLength": 1
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}

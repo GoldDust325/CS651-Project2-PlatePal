@@ -1,0 +1,106 @@
+{
+    "validPhotoOnlyRequest": {
+        "schemaVersion": "1.0.0",
+        "photo": {
+            "source": "local",
+            "mimeType": "image/jpeg",
+            "data": "dGVzdA=="
+        },
+        "companionStyle": "casual"
+    },
+    "validPhotoAudioRequest": {
+        "schemaVersion": "1.0.0",
+        "photo": {
+            "source": "google_photos",
+            "mimeType": "image/png",
+            "data": "dGVzdA=="
+        },
+        "audio": {
+            "mimeType": "audio/webm",
+            "data": "dGVzdA==",
+            "durationSeconds": 45
+        },
+        "companionStyle": "athlete"
+    },
+    "validAnalysisResponse": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-001",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled chicken",
+                "quantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": false
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [],
+        "conflicts": [],
+        "uncertainties": [
+            "Portion size is estimated from the image."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "validApiError": {
+        "schemaVersion": "1.0.0",
+        "error": {
+            "code": "INVALID_REQUEST",
+            "message": "A meal photo is required."
+        }
+    },
+    "invalidMissingPhoto": {
+        "schemaVersion": "1.0.0",
+        "companionStyle": "casual"
+    },
+    "invalidCompanionStyle": {
+        "schemaVersion": "1.0.0",
+        "photo": {
+            "source": "local",
+            "mimeType": "image/jpeg",
+            "data": "dGVzdA=="
+        },
+        "companionStyle": "aggressive"
+    },
+    "invalidAudioDuration": {
+        "schemaVersion": "1.0.0",
+        "photo": {
+            "source": "local",
+            "mimeType": "image/jpeg",
+            "data": "dGVzdA=="
+        },
+        "audio": {
+            "mimeType": "audio/webm",
+            "data": "dGVzdA==",
+            "durationSeconds": 90
+        },
+        "companionStyle": "strict"
+    },
+    "invalidApiError": {
+        "error": {
+            "code": "INVALID_REQUEST"
+        }
+    }
+}
