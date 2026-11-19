@@ -8,6 +8,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const multer = require("multer");
+const verifyFirebaseToken = require(
+    "./middleware/verifyFirebaseToken"
+);
 const app = express();
 app.disable("x-powered-by");
 const PORT = process.env.PORT || 5000;
@@ -121,13 +124,16 @@ app.get("/api/health", (req, res) => {
 // Protected API router
 const protectedRouter = express.Router();
 
-// Deny access until Firebase authentication is implemented.
-// This temporary middleware will be replaced during BE-03.
+// BE-03: Firebase ID token verification
+protectedRouter.use(verifyFirebaseToken);
+
+// Temporary response for authenticated requests
+// Individual routes will be implemented in later issues.
 protectedRouter.use((req, res) => {
-    res.status(401).json({
+    res.status(501).json({
         error: {
-            code: "UNAUTHORIZED",
-            message: "Authentication required"
+            code: "NOT_IMPLEMENTED",
+            message: "Endpoint is pending implementation"
         }
     });
 });
