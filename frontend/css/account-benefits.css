@@ -1,0 +1,122 @@
+/* Account benefits beneath the existing Sign In / Create Account workspace. */
+.account-benefits {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  align-items: center;
+  gap: 20px;
+  margin-top: 34px;
+  padding: 14px 20px;
+  background: #f6f8ef;
+  border: 2px dashed #dce3d5;
+  border-radius: 15px;
+}
+
+.account-benefits__mascot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: stretch;
+  border-right: 1px solid #dce3d5;
+  padding-right: 16px;
+}
+
+.account-benefits__mascot img {
+  display: block;
+  width: 148px;
+  max-width: 100%;
+  height: 132px;
+  object-fit: contain;
+}
+
+.account-benefits__content { min-width: 0; }
+
+.account-benefits h2 {
+  color: #145b46;
+  font-size: clamp(1.25rem, 2vw, 1.375rem);
+  line-height: 1.2;
+  font-weight: 750;
+  letter-spacing: -0.45px;
+  margin: 0 0 3px;
+}
+
+.account-benefits__intro {
+  color: #5b6b60;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0 0 10px;
+}
+
+.account-benefits__list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.account-benefits__item {
+  display: grid;
+  grid-template-columns: 44px minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  padding-inline: 12px;
+  min-width: 0;
+}
+
+.account-benefits__item:first-child { padding-left: 0; }
+.account-benefits__item:last-child { padding-right: 0; }
+.account-benefits__item + .account-benefits__item { border-left: 1px solid #dce3d5; }
+
+.account-benefits__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  color: #1d674e;
+  background: #e5ecdc;
+}
+
+.account-benefits__icon svg { width: 25px; height: 25px; }
+
+.account-benefits h3 {
+  color: #264b39;
+  font-size: 1rem;
+  line-height: 1.4;
+  font-weight: 750;
+  margin: 0 0 4px;
+}
+
+.account-benefits__item p {
+  color: #5b6b60;
+  font-size: 1rem;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* Center a wider banner beneath the forms on roomy desktop screens. */
+@media (min-width: 1200px) {
+  .account-benefits {
+    width: min(1240px, calc(100vw - 48px));
+    margin-left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+@media (max-width: 991px) {
+  .account-benefits { grid-template-columns: 155px minmax(0, 1fr); gap: 22px; }
+  .account-benefits__mascot { padding-right: 16px; }
+  .account-benefits__list { grid-template-columns: 1fr; gap: 16px; }
+  .account-benefits__item { padding: 0; }
+  .account-benefits__item + .account-benefits__item { border-left: 0; }
+}
+
+@media (max-width: 575px) {
+  .account-benefits { grid-template-columns: 1fr; gap: 18px; padding: 22px 20px 26px; margin-top: 26px; }
+  .account-benefits__mascot { border-right: 0; padding: 0; }
+  .account-benefits__mascot img { width: 150px; height: 138px; }
+  .account-benefits h2, .account-benefits__intro { text-align: center; }
+  .account-benefits__intro { margin-bottom: 23px; }
+  .account-benefits__list { gap: 20px; }
+  .account-benefits__item { gap: 15px; }
+}
