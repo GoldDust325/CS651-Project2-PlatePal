@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "description": "PlatePal Project 2 Express Backend and API",
   "main": "index.js",
-  "scripts": {
-    "test": "node tests/analysis.test.js && node --test tests/auth.test.js",
-    "start": "node index.js",
-    "dev": "node --watch index.js",
-    "test:contract": "node tests/analysis.test.js",
-    "test:auth": "node --test tests/auth.test.js"
-  },
+"scripts": {
+  "test": "node tests/analysis.test.js && node --test tests/auth.test.js tests/firestoreMeals.test.js tests/adkClient.test.js",
+  "start": "node index.js",
+  "dev": "node --watch index.js",
+  "test:contract": "node tests/analysis.test.js",
+  "test:auth": "node --test tests/auth.test.js",
+  "test:adk": "node --test tests/adkClient.test.js"
+},
   "keywords": [],
   "author": "",
   "license": "ISC",
