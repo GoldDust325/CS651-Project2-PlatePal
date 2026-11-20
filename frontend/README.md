@@ -34,9 +34,13 @@ The frontend includes the latest wider companion slider, all three pixel robot
 designs, photo selection and drag-and-drop, microphone recording, audio uploads,
 and playback. Microphone recording requires browser permission and localhost or HTTPS.
 
+Google Photos selection is implemented and needs a public OAuth client ID and
+the Express image-import endpoint. Follow [Google Photos setup](../documentation/FE-Google-Photos.md)
+to enable it. The Google Photos button shows an availability message until configured.
+
 Sign-in/account forms are currently UI demonstrations. Firebase authentication,
-Google Photos selection, live API integration, and meal history are pending;
-see the integration notes before testing the full system.
+live meal-analysis integration, and meal-history UI are pending; see the
+integration notes before testing the full system.
 
 ## Production build
 

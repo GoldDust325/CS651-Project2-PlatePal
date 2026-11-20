@@ -291,7 +291,7 @@ function validateSelectedPhoto(mediaItem) {
 }
 
 
-function buildPhotoDownloadUrl(baseUrl) {
+function buildPhotoDownloadUrl(baseUrl, thumbnail = false) {
     let url;
 
     try {
@@ -321,8 +321,9 @@ function buildPhotoDownloadUrl(baseUrl) {
         );
     }
 
-    // Request a bounded image resolution for meal analysis.
-    return `${url.toString()}=w2048-h2048`;
+    // Small gallery previews use the same authorized download checks.
+    const dimensions = thumbnail ? "=w320-h320" : "=w2048-h2048";
+    return `${url.toString()}${dimensions}`;
 }
 
 
@@ -358,9 +359,12 @@ function hasValidImageSignature(buffer, mimeType) {
 }
 
 
-async function downloadSelectedPhoto(photo, accessToken) {
+async function downloadSelectedPhoto(photo, accessToken, thumbnail = false) {
     const token = validateAccessToken(accessToken);
-    const url = buildPhotoDownloadUrl(photo.baseUrl);
+    const url = buildPhotoDownloadUrl(photo.baseUrl, thumbnail);
+    const byteLimit = thumbnail
+        ? Math.min(MAX_IMAGE_SIZE, 1024 * 1024)
+        : MAX_IMAGE_SIZE;
 
     let response;
 
@@ -432,7 +436,7 @@ async function downloadSelectedPhoto(photo, accessToken) {
         for await (const chunk of response.body) {
             totalBytes += chunk.length;
 
-            if (totalBytes > MAX_IMAGE_SIZE) {
+            if (totalBytes > byteLimit) {
                 throw createGooglePhotosError(
                     413,
                     "PHOTO_TOO_LARGE",
@@ -482,10 +486,19 @@ async function downloadSelectedPhoto(photo, accessToken) {
 async function retrieveSelectedGooglePhoto({
     sessionId,
     mediaItemId,
-    accessToken
+    accessToken,
+    thumbnail = false
 }) {
     // Validate authorization before contacting Google.
     validateAccessToken(accessToken);
+
+    if (typeof thumbnail !== "boolean") {
+        throw createGooglePhotosError(
+            400,
+            "INVALID_THUMBNAIL_OPTION",
+            "Choose a valid Google Photos preview option"
+        );
+    }
 
     // Confirm the requested image is in the authorized
     // Google Photos Picker selection.
@@ -501,7 +514,8 @@ async function retrieveSelectedGooglePhoto({
     // Download and validate the image bytes.
     const downloaded = await downloadSelectedPhoto(
         photo,
-        accessToken
+        accessToken,
+        thumbnail
     );
 
     return {

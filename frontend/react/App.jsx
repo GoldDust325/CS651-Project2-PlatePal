@@ -19,6 +19,8 @@ export default function App() {
   const [analysisError, setAnalysisError] = useState('');
   const [loading, setLoading] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [isPhotoBusy, setIsPhotoBusy] = useState(false);
+  const [photoResetKey, setPhotoResetKey] = useState(0);
   const [audioResetKey, setAudioResetKey] = useState(0);
   const activeRequest = useRef(null);
 
@@ -34,12 +36,12 @@ export default function App() {
     setAnalysisError('');
   }
 
-  function selectPhoto(file) {
+  function selectPhoto(file, details = {}) {
     const validationError = photoError(file);
     setImageError(validationError);
     if (validationError) return;
     clearAnalysis();
-    setMealImage({ file, url: URL.createObjectURL(file), name: file.name });
+    setMealImage({ file, url: URL.createObjectURL(file), name: file.name, googlePhotoId: details.googlePhotoId });
   }
 
   function removePhoto() {
@@ -64,11 +66,12 @@ export default function App() {
     setMealImage(null);
     setMealAudio(null);
     setImageError('');
+    setPhotoResetKey(value => value + 1);
     setAudioResetKey(value => value + 1);
   }
 
   async function submitMeal() {
-    if ((!mealImage && !mealAudio) || isRecording || loading) return;
+    if ((!mealImage && !mealAudio) || isRecording || isPhotoBusy || loading) return;
     const request = new AbortController();
     activeRequest.current = request;
     setLoading(true);
@@ -109,11 +112,12 @@ export default function App() {
         <div className="meal-layout">
           <section className="workspace-panel" aria-labelledby="meal-picker-heading">
             <MealPicker image={mealImage} onSelectPhoto={selectPhoto} onRemovePhoto={removePhoto}
+              onBusyChange={setIsPhotoBusy} resetKey={photoResetKey}
               error={imageError} onImageError={() => { removePhoto(); setImageError('We could not open that photo. Try a JPG, PNG, or WEBP image.'); }} />
             <AudioRecorder audio={mealAudio} onChange={selectAudio} onRecordingChange={setIsRecording} resetKey={audioResetKey} />
             <div className="meal-submit-actions">
               <button className="btn btn-primary analyze-meal-button" type="button"
-                disabled={(!mealImage && !mealAudio) || isRecording || loading} onClick={submitMeal}>
+                disabled={(!mealImage && !mealAudio) || isRecording || isPhotoBusy || loading} onClick={submitMeal}>
                 <AppIcon name="sparkle" />{loading ? 'Analyzing meal…' : 'Analyze meal'}
               </button>
               {(mealImage || mealAudio) && <button className="meal-start-over" type="button"

@@ -55,7 +55,7 @@ For Windows PowerShell environments that restrict npm scripts, use `npm.cmd` ins
 
 | Variable | Default |
 |---|---|
-| PORT | 5000 |
+| PORT | 5001 |
 | NODE_ENV | development |
 | ALLOWED_ORIGINS | http://localhost:5173 |
 | MAX_IMAGE_SIZE_MB | 10 |

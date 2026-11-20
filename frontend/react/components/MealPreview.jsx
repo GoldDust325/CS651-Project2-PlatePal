@@ -20,7 +20,7 @@ export default function MealPreview({ image, onChoosePhoto, onSelectPhoto, onRem
             <span className="meal-preview-empty">
               <img className="pixel-plate-preview" src={plate} alt="" />
               <span className="meal-preview-prompt"><AppIcon name="photo" /> Add a meal photo</span>
-              <span className="meal-preview-help">Choose a file or drag your photo here.</span>
+              <span className="meal-preview-help">Import from Google Photos or choose a file below.</span>
             </span>
           )}
         </button>
