@@ -1,0 +1,11 @@
+
+.git/
+**/node_modules/
+**/.env
+**/.env.*
+**/*service-account*.json
+**/application_default_credentials.json
+server/tests/
+frontend/
+documentation/
+**/*.log
