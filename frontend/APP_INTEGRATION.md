@@ -13,6 +13,9 @@ for the next integration work:
 
 - Companion slider: Casual, Strict, and Athlete, with pixel robot artwork.
 - Photos: choose, drop, replace, and remove JPG, PNG, or WEBP files up to 10 MB.
+- Google Photos: authorize, select in Google's picker, display selected thumbnails,
+  and import a photo into the existing preview. Requires OAuth configuration and
+  the Express import route; see [Google Photos setup](../documentation/FE-Google-Photos.md).
 - Audio: record up to 60 seconds, upload a file up to 10 MB, play it back, or remove it.
 - The UI accepts a photo, an audio file, or both.
 - Changing inputs cancels an in-flight analysis and clears its previous result.
@@ -48,11 +51,11 @@ voice-only input. Agree on whether audio-only analysis will be supported before
 connecting that flow. The frontend's audio size limit is 10 MB; the backend's
 configured maximum is 20 MB. The frontend can remain more restrictive.
 
-Protected routes in the current `server/index.js` verify a Firebase token and
-then return `501 NOT_IMPLEMENTED`. Live analysis, meal history, and preference
-requests cannot complete until those routes are implemented.
+The `/api/analyze` route verifies a Firebase token and returns `501 NOT_IMPLEMENTED`.
+Meal CRUD and preference routes are implemented in Express but are not connected
+to this frontend yet. Live analysis cannot complete until its route is implemented.
 
-Google Photos selection, Firebase sign-in, meal history, and food/portion
+Firebase sign-in, meal history, and food/portion
 correction controls still need frontend implementation and integration.
 
 ## Local configuration
@@ -61,7 +64,7 @@ To review the interface, run `npm ci` and `npm run dev` inside `frontend/`.
 No backend credentials are needed for the UI review.
 
 When the authentication and contract work is complete, copy `.env.example` to
-`.env`, set `VITE_MEAL_ANALYSIS_URL=http://localhost:5000/api/analyze`, and restart
+`.env`, set `VITE_MEAL_ANALYSIS_URL=http://localhost:5001/api/analyze`, and restart
 Vite. For production, set the public API URL before `npm run build`.
 `VITE_` variables are included in the browser build; Gemini credentials belong
 in the backend configuration.

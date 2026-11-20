@@ -13,7 +13,7 @@ const verifyFirebaseToken = require(
 );
 const app = express();
 app.disable("x-powered-by");
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 // Media upload size limits
 const MAX_IMAGE_SIZE =
     Number(process.env.MAX_IMAGE_SIZE_MB || 10) * 1024 * 1024;
@@ -144,6 +144,9 @@ app.use(
 
 app.use("/api/meals", verifyFirebaseToken, mealRoutes);
 app.use("/api/preferences", verifyFirebaseToken, preferenceRoutes);
+
+// Import only user-selected Google Photos using their separate Google token.
+app.use("/api/google-photos", require("./routes/googlePhotos"));
 
 
 // Handle unknown routes

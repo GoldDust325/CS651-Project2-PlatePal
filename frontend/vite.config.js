@@ -9,6 +9,11 @@ export default defineConfig({
   plugins: [react()],
   // Relative asset paths also work when the site is hosted in a subfolder.
   base: './',
+  server: {
+    proxy: {
+      '/api/google-photos': 'http://127.0.0.1:5001',
+    },
+  },
   build: {
     rolldownOptions: {
       input: {

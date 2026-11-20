@@ -39,12 +39,12 @@ npm run dev
 
 Configure the backend environment as described in
 [the backend setup guide](documentation/BE-01-Backend-Setup.md).
-The default health endpoint is `http://localhost:5000/api/health`.
+The default health endpoint is `http://localhost:5001/api/health`.
 
 ## Frontend integration status
 
-The frontend includes the current page designs and working local photo/audio
-controls. Firebase sign-in, Google Photos, live analysis integration, and meal
-history still need to be connected. The current API adapter also needs to be
+The frontend includes the current page designs, local photo/audio controls, and
+Google Photos selection with thumbnails and a meal preview. Firebase sign-in,
+live analysis integration, and meal history still need to be connected. The current API adapter also needs to be
 aligned with the backend's shared contract; see
 [the frontend integration notes](frontend/APP_INTEGRATION.md).
