@@ -138,9 +138,12 @@ protectedRouter.use((req, res) => {
     });
 });
 
+// BE-05: Meal CRUD API routes
+const mealRoutes = require("./routes/meals");
+
 // Protected API endpoints
 app.use("/api/analyze", protectedRouter);
-app.use("/api/meals", protectedRouter);
+app.use("/api/meals", verifyFirebaseToken, mealRoutes);
 app.use("/api/preferences", protectedRouter);
 
 // Handle unknown routes
@@ -156,24 +159,46 @@ app.use((req, res) => {
 // Global error handler
 app.use((err, req, res, next) => {
     const status = err instanceof multer.MulterError
-    ? (err.code === "LIMIT_FILE_SIZE" ? 413 : 400)
-    : (err.status || 500);
+        ? (err.code === "LIMIT_FILE_SIZE" ? 413 : 400)
+        : (Number.isInteger(err.status) &&
+           err.status >= 400 && err.status <= 599
+            ? err.status
+            : 500);
 
+    const isClientError = status >= 400 && status < 500;
+
+    const safeCode =
+        isClientError &&
+        typeof err.code === "string" &&
+        /^[A-Z][A-Z0-9_]*$/.test(err.code)
+            ? err.code
+            : isClientError
+                ? "REQUEST_ERROR"
+                : "INTERNAL_SERVER_ERROR";
 
     res.status(status).json({
         error: {
-            code: status === 500
-                ? "INTERNAL_SERVER_ERROR"
-                : "REQUEST_ERROR",
-            message: status >= 500
-                ? "An unexpected server error occurred"
-                : "Request rejected"
+            code: safeCode,
+            message: isClientError &&
+                typeof err.message === "string" &&
+                err.message.length > 0 &&
+                !(err instanceof multer.MulterError)
+                    ? err.message
+                    : status === 500
+                        ? "An unexpected server error occurred"
+                        : "Request rejected"
         }
     });
 });
 
-// Start Express server
-app.listen(PORT, () => {
-    console.log(`PlatePal backend running on port ${PORT}`);
-    console.log(`Health check: http://localhost:${PORT}/api/health`);
-});
+// Start Express server only when launched directly.
+// This allows automated tests to import the app.
+if (require.main === module) {
+    app.listen(PORT, () => {
+        console.log(`PlatePal backend running on port ${PORT}`);
+        console.log(`Health check: http://localhost:${PORT}/api/health`);
+    });
+}
+
+// Export Express app for automated API testing.
+module.exports = app;
