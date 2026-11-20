@@ -102,5 +102,350 @@
         "error": {
             "code": "INVALID_REQUEST"
         }
+    },
+    "validConflictResponse": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-002",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled chicken",
+                "quantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": false
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [
+            "The meal contains tofu, not chicken."
+        ],
+        "conflicts": [
+            {
+                "conflictId": "conflict-001",
+                "foodId": "food-001",
+                "imageObservation": "Grilled chicken",
+                "audioAssertion": "Grilled tofu",
+                "resolved": false
+            }
+        ],
+        "uncertainties": [
+            "Image and audio disagree on food identity."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "validCorrectedResponse": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-002",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled tofu",
+                "quantity": {
+                    "amount": 120,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": true
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [
+            "The meal contains tofu, not chicken."
+        ],
+        "conflicts": [
+            {
+                "conflictId": "conflict-001",
+                "foodId": "food-001",
+                "imageObservation": "Grilled chicken",
+                "audioAssertion": "Grilled tofu",
+                "resolved": true,
+                "resolution": "User confirmed grilled tofu."
+            }
+        ],
+        "uncertainties": [
+            "Nutritional estimates require recalculation."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "pending_recalculation",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": true,
+        "corrected": true,
+        "corrections": [
+            {
+                "foodId": "food-001",
+                "previousName": "Grilled chicken",
+                "correctedName": "Grilled tofu",
+                "previousQuantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "correctedQuantity": {
+                    "amount": 120,
+                    "unit": "g"
+                }
+            }
+        ]
+    },
+    "invalidConflictResolution": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-002",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled tofu",
+                "quantity": {
+                    "amount": 120,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": true
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [
+            "The meal contains tofu, not chicken."
+        ],
+        "conflicts": [
+            {
+                "conflictId": "conflict-001",
+                "foodId": "food-001",
+                "imageObservation": "Grilled chicken",
+                "audioAssertion": "Grilled tofu",
+                "resolved": true
+            }
+        ],
+        "uncertainties": [
+            "Nutritional estimates require recalculation."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "pending_recalculation",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": true,
+        "corrected": true,
+        "corrections": [
+            {
+                "foodId": "food-001",
+                "previousName": "Grilled chicken",
+                "correctedName": "Grilled tofu",
+                "previousQuantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "correctedQuantity": {
+                    "amount": 120,
+                    "unit": "g"
+                }
+            }
+        ]
+    },
+    "invalidNegativeMacros": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-001",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled chicken",
+                "quantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": false
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [],
+        "conflicts": [],
+        "uncertainties": [
+            "Portion size is estimated from the image."
+        ],
+        "estimatedMacros": {
+            "calories": -100,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "invalidMissingFoods": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-001",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [],
+        "conflicts": [],
+        "uncertainties": [
+            "Portion size is estimated from the image."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "invalidFoodQuantity": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-001",
+        "createdAt": "2026-11-18T20:00:00Z",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled chicken",
+                "quantity": {
+                    "amount": -50,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": false
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [],
+        "conflicts": [],
+        "uncertainties": [
+            "Portion size is estimated from the image."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "invalidTimestamp": {
+        "schemaVersion": "1.0.0",
+        "analysisId": "analysis-001",
+        "createdAt": "not-a-date",
+        "foods": [
+            {
+                "foodId": "food-001",
+                "name": "Grilled chicken",
+                "quantity": {
+                    "amount": 150,
+                    "unit": "g"
+                },
+                "estimatedMacros": {
+                    "calories": 248,
+                    "proteinGrams": 46,
+                    "carbohydrateGrams": 0,
+                    "fatGrams": 5
+                },
+                "corrected": false
+            }
+        ],
+        "imageEvidence": [
+            "Image appears to contain grilled chicken."
+        ],
+        "audioAssertions": [],
+        "conflicts": [],
+        "uncertainties": [
+            "Portion size is estimated from the image."
+        ],
+        "estimatedMacros": {
+            "calories": 248,
+            "proteinGrams": 46,
+            "carbohydrateGrams": 0,
+            "fatGrams": 5
+        },
+        "macroStatus": "estimated",
+        "recommendation": "Consider adding vegetables for a balanced meal.",
+        "companionStyle": "casual",
+        "reviewed": false,
+        "corrected": false,
+        "corrections": []
+    },
+    "invalidSchemaVersion": {
+        "schemaVersion": "2.0.0",
+        "photo": {
+            "source": "local",
+            "mimeType": "image/jpeg",
+            "data": "dGVzdA=="
+        },
+        "companionStyle": "casual"
     }
 }

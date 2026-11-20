@@ -14,19 +14,6 @@ addFormats(ajv);
 
 const validate = ajv.compile(schema);
 
-// Export shared fixtures when requested
-if (process.argv.includes("--export-fixtures")) {
-    const fs = require("node:fs");
-    const path = require("node:path");
-
-    fs.writeFileSync(
-        path.join(__dirname, "analysis.fixtures.json"),
-        JSON.stringify(fixtures, null, 4) + "\n"
-    );
-
-    console.log("Shared fixtures exported successfully.");
-}
-
 let passed = 0;
 let failed = 0;
 
@@ -141,6 +128,19 @@ fixtures.invalidSchemaVersion = structuredClone(
 );
 
 fixtures.invalidSchemaVersion.schemaVersion = "2.0.0";
+
+// Export shared fixtures when requested
+if (process.argv.includes("--export-fixtures")) {
+    const fs = require("node:fs");
+    const path = require("node:path");
+
+    fs.writeFileSync(
+        path.join(__dirname, "analysis.fixtures.json"),
+        JSON.stringify(fixtures, null, 4) + "\n"
+    );
+
+    console.log("Shared fixtures exported successfully.");
+}
 
 for (const [name, data] of Object.entries(fixtures)) {
     const expected = name.startsWith("valid");
