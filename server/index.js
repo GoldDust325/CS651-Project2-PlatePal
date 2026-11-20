@@ -138,13 +138,18 @@ protectedRouter.use((req, res) => {
     });
 });
 
-// BE-05: Meal CRUD API routes
+
+ // BE-05: Meal CRUD API routes
 const mealRoutes = require("./routes/meals");
+
+// BE-06: Companion Preferences API routes
+const preferenceRoutes = require("./routes/preferences");
 
 // Protected API endpoints
 app.use("/api/analyze", protectedRouter);
 app.use("/api/meals", verifyFirebaseToken, mealRoutes);
-app.use("/api/preferences", protectedRouter);
+app.use("/api/preferences", verifyFirebaseToken, preferenceRoutes);
+
 
 // Handle unknown routes
 app.use((req, res) => {
