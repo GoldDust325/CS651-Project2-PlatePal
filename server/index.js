@@ -121,23 +121,8 @@ app.get("/api/health", (req, res) => {
     });
 });
 
-// Protected API router
-const protectedRouter = express.Router();
-
-// BE-03: Firebase ID token verification
-protectedRouter.use(verifyFirebaseToken);
-
-// Temporary response for authenticated requests
-// Individual routes will be implemented in later issues.
-protectedRouter.use((req, res) => {
-    res.status(501).json({
-        error: {
-            code: "NOT_IMPLEMENTED",
-            message: "Endpoint is pending implementation"
-        }
-    });
-});
-
+// BE-02: Photo and Audio Analysis API
+const analyzeRoutes = require("./routes/analyze");
 
  // BE-05: Meal CRUD API routes
 const mealRoutes = require("./routes/meals");
@@ -146,7 +131,17 @@ const mealRoutes = require("./routes/meals");
 const preferenceRoutes = require("./routes/preferences");
 
 // Protected API endpoints
-app.use("/api/analyze", protectedRouter);
+app.use(
+    "/api/analyze",
+    verifyFirebaseToken,
+    upload.fields([
+        { name: "photo", maxCount: 1 },
+        { name: "audio", maxCount: 1 }
+    ]),
+    validateMediaSizes,
+    analyzeRoutes
+);
+
 app.use("/api/meals", verifyFirebaseToken, mealRoutes);
 app.use("/api/preferences", verifyFirebaseToken, preferenceRoutes);
 
@@ -189,7 +184,7 @@ app.use((err, req, res, next) => {
                 err.message.length > 0 &&
                 !(err instanceof multer.MulterError)
                     ? err.message
-                    : status === 500
+                    : status >= 500
                         ? "An unexpected server error occurred"
                         : "Request rejected"
         }
