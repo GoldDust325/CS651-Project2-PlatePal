@@ -38,9 +38,11 @@ Google Photos selection is implemented and needs a public OAuth client ID and
 the Express image-import endpoint. Follow [Google Photos setup](../documentation/FE-Google-Photos.md)
 to enable it. The Google Photos button shows an availability message until configured.
 
-Sign-in/account forms are currently UI demonstrations. Firebase authentication,
-live meal-analysis integration, and meal-history UI are pending; see the
-integration notes before testing the full system.
+Sign-in and account creation use Firebase email/password Authentication with
+session restoration, sign-out, and authorized backend profile initialization.
+See [Firebase setup](../documentation/FE-Firebase-Authentication.md) for local
+backend credentials and testing. Live meal-analysis contract mapping and the
+meal-history UI still need their separate integration work.
 
 ## Production build
 

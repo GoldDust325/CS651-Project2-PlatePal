@@ -24,10 +24,11 @@ for the next integration work:
 
 ## Connections still required
 
-The account forms currently demonstrate frontend state only. Connect them to
-Firebase Authentication and supply the signed-in user's Firebase ID token in
-`Authorization: Bearer <token>` before calling protected Express routes.
-The current request adapter does not yet attach that token.
+The account forms now use Firebase email/password Authentication. The shared
+`authenticatedFetch` adapter supplies the signed-in user's Firebase ID token,
+refreshes/retries once on 401, and ends a rejected session. The current analysis
+adapter uses that helper. Account profiles initialize through authenticated
+`POST /api/profile`; see [Firebase setup](../documentation/FE-Firebase-Authentication.md).
 
 The current adapter's provisional fields differ from the group backend contract:
 
@@ -40,8 +41,8 @@ The current adapter's provisional fields differ from the group backend contract:
 | Food calories | `calories` | `estimatedMacros.calories` on each food |
 | Advice | `recommendations` array | `recommendation` string |
 
-Align the multipart field names with the Express analysis route when that route
-is implemented. Express owns conversion from uploaded files to the normalized
+Align the multipart field names with the implemented Express analysis route.
+Express owns conversion from uploaded files to the normalized
 Base64 request sent to ADK. Map the shared response into the result component's
 view model, or update that component to consume the shared response directly.
 Do not change the shared backend schema just to fit the provisional UI adapter.
@@ -51,12 +52,13 @@ voice-only input. Agree on whether audio-only analysis will be supported before
 connecting that flow. The frontend's audio size limit is 10 MB; the backend's
 configured maximum is 20 MB. The frontend can remain more restrictive.
 
-The `/api/analyze` route verifies a Firebase token and returns `501 NOT_IMPLEMENTED`.
-Meal CRUD and preference routes are implemented in Express but are not connected
-to this frontend yet. Live analysis cannot complete until its route is implemented.
+The `/api/analyze` route verifies a Firebase token and calls the team's ADK
+service. Meal CRUD and preference routes are implemented in Express but are
+not connected to this frontend yet. Live analysis also needs a configured ADK
+service and the upload/response field mapping described above.
 
-Firebase sign-in, meal history, and food/portion
-correction controls still need frontend implementation and integration.
+Meal history and food/portion correction controls still need frontend
+implementation and integration.
 
 ## Local configuration
 

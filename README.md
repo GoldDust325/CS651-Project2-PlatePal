@@ -44,7 +44,10 @@ The default health endpoint is `http://localhost:5001/api/health`.
 ## Frontend integration status
 
 The frontend includes the current page designs, local photo/audio controls, and
-Google Photos selection with thumbnails and a meal preview. Firebase sign-in,
-live analysis integration, and meal history still need to be connected. The current API adapter also needs to be
-aligned with the backend's shared contract; see
+Google Photos selection with thumbnails and a meal preview. Email/password
+sign-in and account creation now use Firebase Authentication, with session
+restoration, sign-out, and authorized backend profile initialization. Follow
+[Firebase setup](documentation/FE-Firebase-Authentication.md) to run and test it.
+Live analysis contract mapping and meal history still need to be connected.
+The current API adapter needs to be aligned with the backend's shared contract; see
 [the frontend integration notes](frontend/APP_INTEGRATION.md).

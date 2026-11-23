@@ -1,3 +1,5 @@
+import { authenticatedFetch } from './auth';
+
 export function createMealFormData({ photo, audio, companion }) {
   const body = new FormData();
   if (photo) body.append('image', photo, photo.name);
@@ -23,7 +25,7 @@ export async function analyzeMeal({ photo, audio, companion, signal }) {
 
   let response;
   try {
-    response = await fetch(endpoint, {
+    response = await authenticatedFetch(endpoint, {
       method: 'POST',
       headers: { Accept: 'application/json' },
       body: createMealFormData({ photo, audio, companion }),
@@ -31,6 +33,7 @@ export async function analyzeMeal({ photo, audio, companion, signal }) {
     });
   } catch (error) {
     if (error.name === 'AbortError') throw error;
+    if (error.code?.startsWith('auth/')) throw error;
     throw new Error('Meal analysis could not be reached. Please try again.');
   }
   if (!response.ok) throw new Error('We could not analyze this meal. Please try again.');
