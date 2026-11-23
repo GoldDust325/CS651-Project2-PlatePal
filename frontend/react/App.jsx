@@ -8,9 +8,11 @@ import MealResults from './components/MealResults';
 import AppIcon from './components/AppIcon';
 import { photoError } from './lib/mediaFiles';
 import { analyzeMeal } from './lib/mealAnalysis';
+import { useAuth } from './AuthProvider';
 import '../css/app.css';
 
 export default function App() {
+  const { user, loading: sessionLoading } = useAuth();
   const [mealImage, setMealImage] = useState(null);
   const [mealAudio, setMealAudio] = useState(null);
   const [companion, setCompanion] = useState('Casual');
@@ -23,10 +25,16 @@ export default function App() {
   const [photoResetKey, setPhotoResetKey] = useState(0);
   const [audioResetKey, setAudioResetKey] = useState(0);
   const activeRequest = useRef(null);
+  const previousUser = useRef(user?.uid);
 
   useEffect(() => () => { if (mealImage) URL.revokeObjectURL(mealImage.url); }, [mealImage]);
   useEffect(() => () => { if (mealAudio) URL.revokeObjectURL(mealAudio.url); }, [mealAudio]);
   useEffect(() => () => activeRequest.current?.abort(), []);
+  useEffect(() => {
+    if (sessionLoading) return;
+    if (previousUser.current && previousUser.current !== user?.uid) resetMeal();
+    previousUser.current = user?.uid;
+  }, [user?.uid, sessionLoading]);
 
   function clearAnalysis() {
     activeRequest.current?.abort();

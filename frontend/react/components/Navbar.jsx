@@ -1,4 +1,8 @@
 import logo from '../../images/PlatePalLogo.png';
+import { useState } from 'react';
+import { useAuth } from '../AuthProvider';
+import { signOutAccount } from '../lib/auth';
+import { authMessage } from '../lib/authMessages';
 
 const links = [
   ['Home', 'index.html'],
@@ -10,6 +14,22 @@ const links = [
 
 // The React pages render their entire visible interface in React.
 export default function Navbar({ currentPage }) {
+  const { user, loading } = useAuth();
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+
+  async function logOut() {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await signOutAccount();
+      window.location.assign('./signin.html');
+    } catch (failure) {
+      setError(authMessage(failure));
+      setBusy(false);
+    }
+  }
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to content</a>
@@ -25,7 +45,7 @@ export default function Navbar({ currentPage }) {
           </button>
           <div className="collapse navbar-collapse" id="main-menu">
             <ul className="navbar-nav ms-auto align-items-md-center">
-              {links.map(([label, url]) => (
+              {links.filter(([label]) => label !== 'Sign In' || (!user && !loading)).map(([label, url]) => (
                 <li className="nav-item" key={url}>
                   <a className={`nav-link${currentPage === label ? ' active' : ''}`}
                     href={`./${url}`} aria-current={currentPage === label ? 'page' : undefined}>
@@ -33,10 +53,16 @@ export default function Navbar({ currentPage }) {
                   </a>
                 </li>
               ))}
+              {user && <li className="nav-item">
+                <button className="nav-link" type="button" onClick={logOut} disabled={busy}>
+                  {busy ? 'Signing out…' : 'Sign Out'}
+                </button>
+              </li>}
             </ul>
           </div>
         </div>
       </nav>
+      {error && <p className="container text-danger" role="alert">{error}</p>}
     </>
   );
 }

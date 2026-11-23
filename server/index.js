@@ -144,6 +144,7 @@ app.use(
 
 app.use("/api/meals", verifyFirebaseToken, mealRoutes);
 app.use("/api/preferences", verifyFirebaseToken, preferenceRoutes);
+app.use("/api/profile", verifyFirebaseToken, require("./routes/profile"));
 
 // Import only user-selected Google Photos using their separate Google token.
 app.use("/api/google-photos", require("./routes/googlePhotos"));

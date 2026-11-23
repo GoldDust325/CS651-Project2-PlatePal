@@ -1,30 +1,69 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import LoginForm from './components/LoginForm';
 import CreateAccountForm from './components/CreateAccountForm';
 import AccountBenefits from './components/AccountBenefits';
+import { useAuth } from './AuthProvider';
+import { signInAccount, registerAccount, initializeUserProfile } from './lib/auth';
+import { authMessage } from './lib/authMessages';
 import tableCompanion from '../images/table-companion.png';
 import '../css/signin.css';
 
 export default function SignIn() {
-  // Controlled inputs keep the login and password in React state.
-  const [credentials, setCredentials] = useState({ login: '', password: '' });
+  const { user, loading } = useAuth();
+  const [credentials, setCredentials] = useState({ email: '', password: '', remember: false });
   const [showAccountForm, setShowAccountForm] = useState(false);
   const [message, setMessage] = useState('');
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [profilePending, setProfilePending] = useState(false);
   const loginInput = useRef(null);
+  const profileUser = useRef(null);
+
+  // Also recover profile setup when Firebase restores an existing session.
+  useEffect(() => {
+    if (loading || busy || !user || profileUser.current === user.uid) return;
+    profileUser.current = user.uid;
+    setBusy(true);
+    syncProfile().finally(() => setBusy(false));
+  }, [loading, user?.uid, busy]);
 
   function updateCredentials(field, value) {
     setCredentials(current => ({ ...current, [field]: value }));
     setMessage('');
+    setError('');
   }
 
-  function createAccount(newCredentials) {
-    // Enter copies the new values into the ORIGINAL form, then hides the new form.
-    setCredentials(newCredentials);
-    setShowAccountForm(false);
-    setMessage('Your demo login and password are filled in. Select Submit to try signing in.');
-    loginInput.current.focus();
+  async function syncProfile() {
+    try {
+      await initializeUserProfile();
+      setProfilePending(false);
+      setMessage('You’re signed in. Your PlatePal account is ready.');
+      setError('');
+    } catch (failure) {
+      setProfilePending(true);
+      setError(failure.code?.startsWith('auth/') ? authMessage(failure)
+        : 'You’re signed in, but we could not set up your meal profile. Please retry when the backend is available.');
+    }
+  }
+
+  async function submitAccount(account) {
+    if (busy) return;
+    setBusy(true);
+    setMessage('');
+    setError('');
+    try {
+      const credential = account ? await registerAccount(account) : await signInAccount(credentials);
+      profileUser.current = credential.user.uid;
+      setCredentials(current => ({ ...current, password: '' }));
+      setShowAccountForm(false);
+      await syncProfile();
+    } catch (failure) {
+      setError(authMessage(failure));
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -40,19 +79,27 @@ export default function SignIn() {
           <img className="signin-hero__mascot" src={tableCompanion} alt="" width="340" height="244" />
         </header>
 
-        {/* The original login form stays on the left; Bootstrap stacks forms on mobile. */}
+        {loading ? <p role="status">Checking your session…</p> : user ? (
+          <section className="signin-panel" aria-labelledby="signed-in-heading">
+            <h2 className="signin-heading" id="signed-in-heading">You’re signed in.</h2>
+            <p>{user.displayName ? `${user.displayName} · ` : ''}{user.email}</p>
+            <a className="btn btn-primary" href="./app.html" aria-disabled={busy}
+              onClick={event => { if (busy) event.preventDefault(); }}>Continue to App</a>
+            {profilePending && <button className="btn btn-outline-primary ms-2" type="button" disabled={busy}
+              onClick={async () => { setBusy(true); try { await syncProfile(); } finally { setBusy(false); } }}>Retry profile setup</button>}
+          </section>
+        ) : (
         <div className="row g-4 align-items-start">
           <div className="col-md-6">
             <LoginForm values={credentials} onChange={updateCredentials}
-              onSubmit={() => setMessage('Demo sign-in complete. Explore the App to try a sample meal.')}
-              onCreateAccount={() => { setShowAccountForm(true); setMessage(''); }}
-              showAccountForm={showAccountForm} loginInput={loginInput} />
-            <p className="signin-status mt-3 mb-0" role="status" aria-atomic="true">{message}</p>
+              onSubmit={() => submitAccount()}
+              onCreateAccount={() => { setShowAccountForm(true); setMessage(''); setError(''); }}
+              showAccountForm={showAccountForm} loginInput={loginInput} busy={busy} />
           </div>
           <div className="col-md-6">
-            {/* Conditional rendering removes every account-form field after Enter. */}
+            {/* Account fields are removed after successful registration. */}
             {showAccountForm ? (
-              <CreateAccountForm onEnter={createAccount} />
+              <CreateAccountForm onEnter={submitAccount} busy={busy} />
             ) : (
               <aside className="signin-invitation" aria-labelledby="invitation-heading">
                 <p className="eyebrow mb-2">Pull up a chair</p>
@@ -63,6 +110,9 @@ export default function SignIn() {
             )}
           </div>
         </div>
+        )}
+        <p className="signin-status mt-3 mb-0" role="status" aria-atomic="true">{message}</p>
+        {error && <p className="text-danger mt-3" role="alert">{error}</p>}
 
         <AccountBenefits />
       </main>
