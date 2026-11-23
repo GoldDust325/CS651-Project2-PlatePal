@@ -115,6 +115,8 @@ def test_gemini_receives_inline_bytes_without_style(monkeypatch):
         async def __aenter__(self): return self
         async def __aexit__(self, *args): pass
     class Client:
+        def __init__(self, **kwargs):
+            assert kwargs["http_options"].retry_options.attempts == 3
         aio = AsyncClient()
     monkeypatch.setattr(s.genai, 'Client', Client)
     payload = photo_request()
