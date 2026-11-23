@@ -147,3 +147,11 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Python environment and private demo files
+.venv/
+__pycache__/
+.pytest_cache/
+.local/
+
+.venv-python315/
