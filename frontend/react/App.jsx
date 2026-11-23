@@ -5,6 +5,7 @@ import MealPicker from './components/MealPicker';
 import CompanionSelector from './components/CompanionSelector';
 import AudioRecorder from './components/AudioRecorder';
 import MealResults from './components/MealResults';
+import MealHistory from './components/MealHistory';
 import AppIcon from './components/AppIcon';
 import { photoError } from './lib/mediaFiles';
 import { analyzeMeal } from './lib/mealAnalysis';
@@ -114,7 +115,10 @@ export default function App() {
             <h1>What's on your plate?</h1>
             <p className="lead mt-3">Bring your meal to the table. Add a photo, describe it with your voice, and let your pal get to know your plate.</p>
           </div>
-          <CompanionSelector value={companion} onChange={changeCompanion} />
+          <div className="workspace-controls">
+            <CompanionSelector value={companion} onChange={changeCompanion} />
+            <MealHistory />
+          </div>
         </header>
 
         <div className="meal-layout">
