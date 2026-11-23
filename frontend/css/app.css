@@ -2,12 +2,27 @@
 .meal-workspace { max-width: 1280px; }
 .workspace-intro { display: grid; grid-template-columns: minmax(0, 1fr) 440px; align-items: start; gap: 40px; }
 .workspace-intro-copy { min-width: 0; }
+.workspace-controls { display: grid; gap: 14px; min-width: 0; }
+.meal-history-button { display: inline-flex; align-items: center; justify-content: center; justify-self: end; gap: 8px; min-height: 44px; background: #fffef9; }
 .workspace-intro .lead { max-width: 740px; color: var(--pv-muted); font-size: 1.125rem; line-height: 1.7; margin-bottom: 0; }
 .meal-layout { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: start; }
 .workspace-panel { min-width: 0; padding: clamp(20px, 2.5vw, 28px); border: 1px solid var(--pv-line); border-radius: 14px; background: #fffef9; }
 .workspace-heading { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
 .meal-section-description { color: var(--pv-muted); font-size: 1rem; line-height: 1.6; margin-bottom: 20px; }
 .meal-results-panel { position: sticky; top: 24px; }
+
+/* History entry point; saved-meal retrieval will be connected by the team. */
+.meal-history-dialog { width: min(600px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: clamp(20px, 4vw, 32px); overflow-y: auto; border: 1px solid var(--pv-line); border-radius: 18px; color: var(--pv-ink); background: #fffef9; box-shadow: 0 20px 80px #17342640; }
+.meal-history-dialog::backdrop { background: #17342680; }
+.meal-history-header { display: flex; justify-content: space-between; align-items: start; gap: 20px; }
+.meal-history-header h2 { margin: 0; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.5px; }
+.meal-history-close { display: grid; place-items: center; flex: 0 0 40px; width: 40px; height: 40px; padding: 0; border: 1px solid var(--pv-line); border-radius: 50%; color: var(--pv-green); background: #f0f4e8; }
+.meal-history-close:hover { background: #e3ecd9; }
+.meal-history-close:focus-visible { outline: 2px solid var(--pv-green); outline-offset: 3px; }
+.meal-history-empty { display: flex; align-items: center; flex-direction: column; gap: 14px; margin: 24px 0; padding: 32px 20px; border: 1px dashed #cddbc6; border-radius: 12px; background: #f3f6ec; text-align: center; }
+.meal-history-symbol { display: grid; place-items: center; width: 64px; height: 64px; border-radius: 50%; color: var(--pv-green); background: #e3ecd9; }
+.meal-history-empty h3 { margin: 0; font-size: 1.25rem; font-weight: 700; }
+.meal-history-empty p { max-width: 42ch; margin: 0; color: var(--pv-muted); font-size: 1rem; line-height: 1.7; }
 
 /* Native three-stop slider, with pixel companions and a moving label highlight. */
 .companion-control { min-width: 0; width: 100%; margin: 0; padding: 0; border: 0; }
@@ -144,6 +159,7 @@
   .meal-layout { grid-template-columns: 1fr; }
   .meal-results-panel { position: static; }
   .workspace-intro { grid-template-columns: 1fr; gap: 22px; }
+  .workspace-controls { width: min(100%, 440px); justify-self: end; }
   .companion-control { width: min(100%, 440px); justify-self: end; }
 }
 @media (max-width: 767px) {

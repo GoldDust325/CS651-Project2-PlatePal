@@ -12,6 +12,9 @@ for the next integration work:
 ## Current frontend behavior
 
 - Companion slider: Casual, Strict, and Athlete, with pixel robot artwork.
+- Meal History button beneath the companion selector opens a styled placeholder
+  dialog. The close button, Back to meal button, and Escape return to the App.
+  This is a frontend entry point only; it does not fetch, save, or delete meals.
 - Photos: choose, drop, replace, and remove JPG, PNG, or WEBP files up to 10 MB.
 - Google Photos: authorize, select in Google's picker, display selected thumbnails,
   and import a photo into the existing preview. Requires OAuth configuration and
@@ -57,8 +60,12 @@ service. Meal CRUD and preference routes are implemented in Express but are
 not connected to this frontend yet. Live analysis also needs a configured ADK
 service and the upload/response field mapping described above.
 
-Meal history and food/portion correction controls still need frontend
-implementation and integration.
+`react/components/MealHistory.jsx` contains the Meal History button and placeholder
+view for the team to connect later. Replace its coming-soon content with the real
+history states and use `authenticatedFetch` with `GET /api/meals` when implementing
+the data integration. Do not treat the placeholder as an empty saved-meal response.
+History retrieval, meal details, and edit/delete controls remain pending, along
+with food/portion correction controls.
 
 ## Local configuration
 
@@ -81,5 +88,6 @@ frontend origin to `ALLOWED_ORIGINS` when connecting the deployed applications.
 | `react/SignIn.jsx` and account form components | Firebase sign-in/account creation state |
 | `react/lib/mealAnalysis.js` | Authentication header, upload fields, and response validation/mapping |
 | `react/components/MealResults.jsx` | Display the shared analysis response and review/correction states |
+| `react/components/MealHistory.jsx` | Frontend history button/dialog; saved-meal data integration pending |
 | `react/components/AudioRecorder.jsx` | Real microphone recordings and uploaded audio |
 | `react/App.jsx` | Shared meal inputs, companion selection, and request lifecycle |
