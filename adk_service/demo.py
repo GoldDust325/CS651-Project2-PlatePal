@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 import time
 import uuid
+from urllib.parse import urlparse
 
 import httpx
 from PIL import Image
@@ -19,11 +20,24 @@ def main():
     parser.add_argument('photo', type=Path)
     parser.add_argument('--url', default='http://127.0.0.1:5001/api/analyze')
     parser.add_argument('--style', choices=list(STYLES), default='casual')
+    parser.add_argument('--firebase-login', action='store_true', help='Sign in with an existing Firebase email/password account; no token copying')
     parser.add_argument('--compare-styles', action='store_true', help='Run two additional real ADK coaching calls on the same analysis')
     args = parser.parse_args()
+    target = urlparse(args.url)
+    if target.scheme != 'https' and not (target.scheme == 'http' and target.hostname in ('localhost', '127.0.0.1', '::1')):
+        parser.error('Use HTTPS or a loopback HTTP URL for authenticated requests.')
+    if not args.photo.is_file():
+        parser.error('Photo file not found. Supply the actual local image path.')
     with Image.open(args.photo) as im:
         mime = Image.MIME[im.format]
-    token = getpass.getpass('Firebase ID token (hidden; same Firebase project as Express): ').strip()
+    if args.firebase_login:
+        from adk_service.live_auth import sign_in
+        try:
+            token = sign_in()
+        except (ValueError, OSError):
+            parser.error('Firebase sign-in failed. Check account, network, public web API key and project configuration. You can also omit --firebase-login and enter an ID token.')
+    else:
+        token = getpass.getpass('Firebase ID token (hidden; same Firebase project as Express): ').strip()
     if not token:
         parser.error('A Firebase ID token is required')
     started = time.perf_counter()
