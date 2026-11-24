@@ -5,6 +5,7 @@ import MealPicker from './components/MealPicker';
 import CompanionSelector from './components/CompanionSelector';
 import AudioRecorder from './components/AudioRecorder';
 import MealResults from './components/MealResults';
+import MealHistory from './components/MealHistory';
 import AppIcon from './components/AppIcon';
 import { photoError } from './lib/mediaFiles';
 import { analyzeMeal } from './lib/mealAnalysis';
@@ -79,7 +80,7 @@ export default function App() {
   }
 
   async function submitMeal() {
-    if ((!mealImage && !mealAudio) || isRecording || isPhotoBusy || loading) return;
+   if (!mealImage || isRecording || isPhotoBusy || loading) return;
     const request = new AbortController();
     activeRequest.current = request;
     setLoading(true);
@@ -87,7 +88,9 @@ export default function App() {
     try {
       const result = await analyzeMeal({
         photo: mealImage?.file,
+        photoSource: mealImage?.googlePhotoId ? 'google_photos' : 'local',
         audio: mealAudio?.file,
+        audioDuration: mealAudio?.duration,
         companion,
         signal: request.signal,
       });
@@ -112,9 +115,14 @@ export default function App() {
           <div className="workspace-intro-copy">
             <p className="eyebrow">Your companion at the table</p>
             <h1>What's on your plate?</h1>
-            <p className="lead mt-3">Bring your meal to the table. Add a photo, describe it with your voice, and let your pal get to know your plate.</p>
+            <p className="lead mt-3">
+              Bring your meal to the table. Add a photo of your food, and optionally describe it with your voice. Let your pal get to know your plate!
+            </p>
           </div>
-          <CompanionSelector value={companion} onChange={changeCompanion} />
+          <div className="workspace-controls">
+            <CompanionSelector value={companion} onChange={changeCompanion} />
+            <MealHistory />
+          </div>
         </header>
 
         <div className="meal-layout">
@@ -125,7 +133,7 @@ export default function App() {
             <AudioRecorder audio={mealAudio} onChange={selectAudio} onRecordingChange={setIsRecording} resetKey={audioResetKey} />
             <div className="meal-submit-actions">
               <button className="btn btn-primary analyze-meal-button" type="button"
-                disabled={(!mealImage && !mealAudio) || isRecording || isPhotoBusy || loading} onClick={submitMeal}>
+                disabled={!mealImage || isRecording || isPhotoBusy || loading} onClick={submitMeal}>
                 <AppIcon name="sparkle" />{loading ? 'Analyzing meal…' : 'Analyze meal'}
               </button>
               {(mealImage || mealAudio) && <button className="meal-start-over" type="button"

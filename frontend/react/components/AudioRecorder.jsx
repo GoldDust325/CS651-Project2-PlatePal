@@ -4,6 +4,40 @@ import { audioError, formatTime, MAX_RECORD_SECONDS } from '../lib/mediaFiles';
 
 const mimeTypes = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
 
+function getAudioDuration(file) {
+  return new Promise((resolve, reject) => {
+    const audio = document.createElement('audio');
+    const url = URL.createObjectURL(file);
+
+    const cleanup = () => {
+      audio.removeAttribute('src');
+      audio.load();
+      URL.revokeObjectURL(url);
+    };
+
+    audio.preload = 'metadata';
+
+    audio.onloadedmetadata = () => {
+      const duration = audio.duration;
+      cleanup();
+
+      if (!Number.isFinite(duration) || duration <= 0) {
+        reject(new Error('Unable to determine audio duration.'));
+        return;
+      }
+
+      resolve(duration);
+    };
+
+    audio.onerror = () => {
+      cleanup();
+      reject(new Error('Unable to read audio file.'));
+    };
+
+    audio.src = url;
+  });
+}
+
 export default function AudioRecorder({ audio, onChange, onRecordingChange, resetKey }) {
   const [phase, setPhase] = useState('idle');
   const [elapsed, setElapsed] = useState(0);
@@ -68,6 +102,7 @@ export default function AudioRecorder({ audio, onChange, onRecordingChange, rese
     }
 
     const currentRequest = ++requestId.current;
+    if (!mounted.current || currentRequest !== requestId.current) return;
     setPhase('requesting');
     player.current?.pause();
 
@@ -144,14 +179,45 @@ export default function AudioRecorder({ audio, onChange, onRecordingChange, rese
     }
   }
 
-  function uploadAudio(event) {
-    const file = event.target.files[0];
-    event.target.value = '';
-    if (!file) return;
-    const validationError = audioError(file);
+async function uploadAudio(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+
+  if (!file) return;
+  const currentRequest = ++requestId.current;
+  const validationError = audioError(file);
+  if (validationError) {
     setError(validationError);
-    if (!validationError) onChange(file, { source: 'upload' });
+    return;
   }
+
+  try {
+    const duration = await getAudioDuration(file);
+
+    if (!mounted.current || currentRequest !== requestId.current) {
+      return;
+    }
+
+    if (duration > MAX_RECORD_SECONDS) {
+      setError('Audio must be 60 seconds or shorter.');
+      return;
+    }
+
+    setError('');
+    onChange(file, {
+      source: 'upload',
+      duration,
+    });
+  } catch (error) {
+    if (!mounted.current || currentRequest !== requestId.current) {
+      return;
+    }
+
+    setError('We could not read the audio duration. Try another file.');
+  }
+}
+
+
 
   const recording = phase === 'recording';
   const title = recording ? 'Recording your meal…'
@@ -187,9 +253,17 @@ export default function AudioRecorder({ audio, onChange, onRecordingChange, rese
 
       {audio && !busy && <div className="voice-audio-preview">
         <audio ref={player} controls preload="metadata" src={audio.url} aria-label="Your meal voice description" />
-        <button className="voice-remove" type="button" onClick={() => { setError(''); onChange(null); }}>
-          <AppIcon name="close" size={16} /> Remove audio
-        </button>
+        <button
+  className="voice-remove"
+  type="button"
+  onClick={() => {
+    requestId.current += 1;
+    setError('');
+    onChange(null);
+  }}
+>
+  <AppIcon name="close" size={16} /> Remove audio
+</button>
       </div>}
 
       <div className="voice-upload-row">
