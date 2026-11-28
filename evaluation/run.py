@@ -56,7 +56,8 @@ async def evaluate(sample, output):
                         if paired is None:
                             raise ValueError('Paired photo/audio analysis unavailable')
                         fixed = paired
-                        recommendation = await coach(fixed, request['companionStyle'], str(uuid.uuid4()))
+                        review = await coach(fixed, request['companionStyle'], str(uuid.uuid4()))
+                        recommendation = review['recommendation']
                     else:
                         fixed = await identify(request, image_bytes)
                         recommendation = None
