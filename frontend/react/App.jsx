@@ -9,6 +9,9 @@ import MealHistory from './components/MealHistory';
 import AppIcon from './components/AppIcon';
 import { photoError } from './lib/mediaFiles';
 import { analyzeMeal } from './lib/mealAnalysis';
+import { mealsApi } from './lib/meals';
+import { goalsApi } from './lib/goals';
+import { buildSourceMetadata, prepareMealForSave } from './lib/mealHistory';
 import { useAuth } from './AuthProvider';
 import '../css/app.css';
 
@@ -25,12 +28,14 @@ export default function App() {
   const [isPhotoBusy, setIsPhotoBusy] = useState(false);
   const [photoResetKey, setPhotoResetKey] = useState(0);
   const [audioResetKey, setAudioResetKey] = useState(0);
+  const [saveStatus, setSaveStatus] = useState({ state: 'idle', error: '' });
   const activeRequest = useRef(null);
+  const activeSave = useRef(null);
   const previousUser = useRef(user?.uid);
 
   useEffect(() => () => { if (mealImage) URL.revokeObjectURL(mealImage.url); }, [mealImage]);
   useEffect(() => () => { if (mealAudio) URL.revokeObjectURL(mealAudio.url); }, [mealAudio]);
-  useEffect(() => () => activeRequest.current?.abort(), []);
+  useEffect(() => () => { activeRequest.current?.abort(); activeSave.current?.abort(); }, []);
   useEffect(() => {
     if (sessionLoading) return;
     if (previousUser.current && previousUser.current !== user?.uid) resetMeal();
@@ -40,9 +45,46 @@ export default function App() {
   function clearAnalysis() {
     activeRequest.current?.abort();
     activeRequest.current = null;
+    activeSave.current?.abort();
+    activeSave.current = null;
     setLoading(false);
     setAnalysis(null);
     setAnalysisError('');
+    setSaveStatus({ state: 'idle', error: '' });
+  }
+
+  async function saveMeal() {
+    if (!analysis || activeSave.current || saveStatus.state === 'saved') return;
+    const request = new AbortController();
+    activeSave.current = request;
+    setSaveStatus({ state: 'saving', error: '' });
+    try {
+      const body = prepareMealForSave(analysis, buildSourceMetadata({
+        photo: mealImage?.file,
+        photoSource: mealImage?.googlePhotoId ? 'google_photos' : 'local',
+        audio: mealAudio?.file,
+        audioDuration: mealAudio?.duration,
+      }));
+      await mealsApi.save(body, { signal: request.signal });
+      // The meal is saved; now apply the planner's goals the user just reviewed.
+      let goals;
+      if (body.analysis.planUpdate) {
+        try {
+          await goalsApi.applyPlan(body.analysis.planUpdate, { signal: request.signal });
+          goals = 'updated';
+        } catch (error) {
+          if (error.name === 'AbortError') throw error;
+          goals = 'failed';
+        }
+      }
+      if (activeSave.current === request) setSaveStatus({ state: 'saved', error: '', goals });
+    } catch (error) {
+      if (activeSave.current === request && error.name !== 'AbortError') {
+        setSaveStatus({ state: 'idle', error: error.message || 'This meal could not be saved. Please try again.' });
+      }
+    } finally {
+      if (activeSave.current === request) activeSave.current = null;
+    }
   }
 
   function selectPhoto(file, details = {}) {
@@ -121,7 +163,7 @@ export default function App() {
           </div>
           <div className="workspace-controls">
             <CompanionSelector value={companion} onChange={changeCompanion} />
-            <MealHistory />
+            <MealHistory key={user?.uid || 'signed-out'} />
           </div>
         </header>
 
@@ -143,7 +185,8 @@ export default function App() {
           </section>
           <section className="workspace-panel meal-results-panel" aria-labelledby="results-heading">
             <MealResults analysis={analysis} loading={loading} companion={companion}
-              hasPhoto={!!mealImage} hasAudio={!!mealAudio} />
+              hasPhoto={!!mealImage} hasAudio={!!mealAudio}
+              onSave={saveMeal} saveStatus={saveStatus} />
           </section>
         </div>
       </main>
