@@ -33,22 +33,29 @@ refreshes/retries once on 401, and ends a rejected session. The current analysis
 adapter uses that helper. Account profiles initialize through authenticated
 `POST /api/profile`; see [Firebase setup](../documentation/FE-Firebase-Authentication.md).
 
-The current adapter's provisional fields differ from the group backend contract:
+The frontend and the Express analysis route use the same field names.
+`react/lib/mealAnalysisContract.js` builds the multipart request and maps the
+shared BE-08 response into the result component's view model:
 
-| Data | Current frontend adapter | Group backend contract |
+| Data | Frontend sends / displays | Express route / BE-08 contract |
 | --- | --- | --- |
-| Photo upload field | `image` | `photo` in the existing Multer configuration |
-| Companion selection | `companion` with `Casual`, `Strict`, or `Athlete` | `companionStyle` with `casual`, `strict`, or `athlete` in the shared normalized request |
-| Meal nutrients | `totals.calories`, `protein`, `carbs`, `fat`, optional `fiber` | `estimatedMacros.calories`, `proteinGrams`, `carbohydrateGrams`, `fatGrams` |
-| Food portion | `portion` text | `quantity` object |
-| Food calories | `calories` | `estimatedMacros.calories` on each food |
-| Advice | `recommendations` array | `recommendation` string |
+| Photo upload field | `photo` | `photo` (Multer field) |
+| Photo source | `photoSource`: `local` or `google_photos` | `photoSource` → `photo.source` |
+| Companion selection | UI `Casual`/`Strict`/`Athlete`, sent lowercased as `companionStyle` | `companionStyle`: `casual`, `strict`, or `athlete` |
+| Audio | `audio` plus `audioDurationSeconds` (0–60) | `audio` → `audio.durationSeconds` |
+| Meal nutrients | view model `totals.calories`, `protein`, `carbs`, `fat` | `estimatedMacros.calories`, `proteinGrams`, `carbohydrateGrams`, `fatGrams` |
+| Food portion | view model `portion` text, e.g. `150 g` | `quantity` object (`amount`, `unit`) |
+| Food calories | view model `calories` | `estimatedMacros.calories` on each food |
+| Advice | view model `recommendations` (one-item array) | `recommendation` string |
 
-Align the multipart field names with the implemented Express analysis route.
-Express owns conversion from uploaded files to the normalized
-Base64 request sent to ADK. Map the shared response into the result component's
-view model, or update that component to consume the shared response directly.
-Do not change the shared backend schema just to fit the provisional UI adapter.
+Express owns conversion from uploaded files to the normalized Base64 request sent
+to ADK. Do not change the shared backend schema to fit the UI; change the mapping
+in `mealAnalysisContract.js` instead. The result component's optional Fiber row
+is never shown because the contract has no fiber value.
+
+`server/tests/frontendContract.integration.test.mjs` sends requests built by the
+frontend through the real Express route (with mocked auth and ADK) and maps the
+response back, so a field-name drift on either side fails `npm test` in `server/`.
 
 The shared version 1.0.0 request requires a photo; the UI currently also allows
 voice-only input. Agree on whether audio-only analysis will be supported before
