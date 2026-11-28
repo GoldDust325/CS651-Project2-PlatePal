@@ -191,4 +191,5 @@ module.exports = {
   updateMeal: service('updateMeal'),
   deleteMeal: service('deleteMeal'),
   createMealService,
+  getDatabase, // Shared with services/firestoreGoals.js.
 };
