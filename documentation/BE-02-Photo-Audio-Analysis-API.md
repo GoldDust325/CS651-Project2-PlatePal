@@ -144,13 +144,13 @@ Automated endpoint tests use mocked authentication and ADK responses.
 1. Test with real Firebase ID tokens and actual uploaded media.
 2. Verify photo-only and photo-plus-audio analysis against the deployed Python ADK service.
 3. Confirm Cloud Run connectivity and service authentication where required.
-4. Align frontend upload fields:
-   - Frontend currently sends `image`; backend expects `photo`.
-   - Frontend currently sends `companion`; backend expects `companionStyle`.
-   - Frontend must supply `audioDurationSeconds` with audio.
-5. Align frontend response handling with BE-08:
-   - BE-08 uses `recommendation` as a string.
-   - Existing frontend validation expects `recommendations` as an array.
+4. Frontend upload fields: done. The frontend sends `photo`, `photoSource`,
+   lowercase `companionStyle`, and `audio` with `audioDurationSeconds`
+   (`frontend/react/lib/mealAnalysisContract.js`).
+5. Frontend response handling with BE-08: done. The frontend maps
+   `estimatedMacros`, `quantity`, and the `recommendation` string into its view
+   model. `tests/frontendContract.integration.test.mjs` checks both directions
+   against this route.
 6. Ensure frontend requests include Firebase Bearer tokens.
 7. Align supported audio formats and upload size restrictions.
 8. Verify real ADK error handling and malformed responses end to end.
