@@ -1,5 +1,6 @@
 # Shiv Shankar Yadav — #3 history authorization and #6 scoring tests.
 import asyncio
+import json
 import copy
 import httpx
 from adk_service.history import MealHistory
@@ -59,13 +60,15 @@ def test_real_runner_can_execute_history_comparison_tool():
                 part = types.Part.from_function_call(name='compare_to_recent_meals', args={})
             else:
                 assert responses[-1].response['status'] == 'empty'
-                part = types.Part.from_text(text='No saved meals yet; this meal has 100 estimated calories.')
+                part = types.Part.from_text(text=json.dumps({
+                    'healthRating': 'okay', 'healthNote': 'Fixture meal.', 'suggestedAdditions': [],
+                    'allergyFlags': [], 'recommendation': 'No saved meals yet; this meal has 100 estimated calories.'}))
             yield LlmResponse(content=types.Content(role='model', parts=[part]))
     current = {'estimatedMacros': MACROS, 'foods': []}
     history = MealHistory('Bearer isolated-test', current)
     history.cache = {'status': 'empty', 'meals': []}
     result = asyncio.run(coach(current, 'casual', 'history-runner-test', Model(), history))
-    assert 'No saved meals' in result
+    assert 'No saved meals' in result['recommendation']
 
 
 def test_four_way_harness_reuses_fixed_paired_analysis(monkeypatch, tmp_path):
@@ -82,7 +85,7 @@ def test_four_way_harness_reuses_fixed_paired_analysis(monkeypatch, tmp_path):
         return fixed
     async def coach(analysis, style, identifier):
         assert analysis is fixed
-        return 'Scripted fixture recommendation'
+        return {'recommendation': 'Scripted fixture recommendation', 'healthRating': 'okay'}
     monkeypatch.setattr(run, 'identify', identify)
     monkeypatch.setattr(run, 'coach', coach)
     output = tmp_path / 'results.jsonl'
@@ -94,3 +97,28 @@ def test_four_way_harness_reuses_fixed_paired_analysis(monkeypatch, tmp_path):
     assert calls == [(True, False), (False, True), (True, True)]
     assert rows[-1]['foods'] == rows[-2]['foods']
     assert all(row['cost_amount'] is None and row['recommendation_quality'] is None for row in rows)
+
+
+def test_goals_are_scoped_to_authorization_and_cached(monkeypatch):
+    calls = []
+    goals = {'fitnessGoal': 'maintain', 'weeklyGoals': ['Eat fruit daily.'],
+             'dailyTargets': {'calories': 2000, 'proteinGrams': 100, 'carbohydrateGrams': 250,
+                              'fatGrams': 70, 'fiberGrams': 28}, 'source': 'user'}
+    class Client:
+        def __init__(self, **kwargs): assert kwargs['follow_redirects'] is False
+        async def __aenter__(self): return self
+        async def __aexit__(self, *args): pass
+        async def get(self, url, headers):
+            calls.append(headers['Authorization'])
+            assert url.endswith('/api/goals')
+            body = {'goals': None if headers['Authorization'] == 'Bearer B' else goals}
+            return httpx.Response(200, json=body, request=httpx.Request('GET', url))
+    monkeypatch.setattr(module.httpx, 'AsyncClient', Client)
+    a, b = MealHistory('Bearer A', None), MealHistory('Bearer B', None)
+    first = asyncio.run(a.get_current_goals())
+    assert first['status'] == 'available' and 'source' not in first['goals']
+    first['goals']['weeklyGoals'].clear()
+    assert asyncio.run(a.get_current_goals())['goals']['weeklyGoals'] == ['Eat fruit daily.']
+    assert asyncio.run(b.get_current_goals()) == {'status': 'empty', 'goals': None}
+    assert calls == ['Bearer A', 'Bearer B']
+    assert asyncio.run(MealHistory(None, None).get_current_goals())['status'] == 'unavailable'
