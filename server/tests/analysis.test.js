@@ -129,6 +129,65 @@ fixtures.invalidSchemaVersion = structuredClone(
 
 fixtures.invalidSchemaVersion.schemaVersion = "2.0.0";
 
+// Optional Agent 1/Agent 2 fields: category, nutrients, dietary
+// context from the voice note, and the coach's structured review.
+const coachedResponse = structuredClone(
+    fixtures.validAnalysisResponse
+);
+
+coachedResponse.foods[0].category = "protein";
+coachedResponse.foods[0].estimatedNutrients = {
+    fiberGrams: 0,
+    sugarGrams: 0,
+    sodiumMilligrams: 110
+};
+coachedResponse.estimatedNutrients = {
+    fiberGrams: 0,
+    sugarGrams: 0,
+    sodiumMilligrams: 110
+};
+coachedResponse.dietaryContext = {
+    allergies: ["peanuts"],
+    cravings: ["Chinese food"]
+};
+coachedResponse.review = {
+    healthRating: "okay",
+    healthNote: "High in protein but has no vegetables or whole grains.",
+    suggestedAdditions: ["steamed broccoli", "brown rice"],
+    allergyFlags: [],
+    cravingSuggestion: "Try a chicken and vegetable stir-fry without peanuts."
+};
+
+coachedResponse.planUpdate = {
+    goals: {
+        fitnessGoal: "build_muscle",
+        dailyTargets: {
+            calories: 2600,
+            proteinGrams: 150,
+            carbohydrateGrams: 300,
+            fatGrams: 80,
+            fiberGrams: 30
+        },
+        weeklyGoals: ["Add vegetables to 4 dinners this week."]
+    },
+    reason: "Protein is on track but vegetables are low.",
+    basedOnMealCount: 3
+};
+
+fixtures.validCoachedResponse = coachedResponse;
+
+// Invalid: planner daily calorie target below the safe minimum
+fixtures.invalidPlanTargets = structuredClone(coachedResponse);
+fixtures.invalidPlanTargets.planUpdate.goals.dailyTargets.calories = 500;
+
+// Invalid: health rating outside the allowed values
+fixtures.invalidHealthRating = structuredClone(coachedResponse);
+fixtures.invalidHealthRating.review.healthRating = "great";
+
+// Invalid: unknown food category
+fixtures.invalidFoodCategory = structuredClone(coachedResponse);
+fixtures.invalidFoodCategory.foods[0].category = "meat";
+
 // Export shared fixtures when requested
 if (process.argv.includes("--export-fixtures")) {
     const fs = require("node:fs");
