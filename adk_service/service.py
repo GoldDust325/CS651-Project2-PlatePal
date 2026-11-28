@@ -483,9 +483,12 @@ def identifier_agent(model, outputs, progress=None):
         )
 
     def after(callback_context):
-        outputs["report"] = check_report(
-            callback_context.state.get(REPORT_KEY)
-        )
+        report = callback_context.state.get(REPORT_KEY)
+        if report is None:
+            # ADK may invoke this callback while unwinding cancellation.
+            # Leave missing output unset and preserve the original failure.
+            return None
+        outputs["report"] = check_report(report)
         log.info(
             "analysisId=%s stage=identification status=complete",
             outputs["analysisId"],
@@ -537,6 +540,8 @@ def coach_agent(model, style, outputs, history=None, progress=None):
 
     def after(callback_context):
         review = callback_context.state.get(REVIEW_KEY)
+        if review is None:
+            return None
 
         if isinstance(review, str):
             review = json.loads(review)
@@ -608,6 +613,8 @@ def planner_agent(model, outputs, history, progress=None, style="casual"):
 
     async def after(callback_context):
         plan = callback_context.state.get(PLAN_KEY)
+        if plan is None:
+            return None
 
         if isinstance(plan, str):
             plan = json.loads(plan)

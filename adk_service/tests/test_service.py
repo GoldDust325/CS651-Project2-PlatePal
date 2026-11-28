@@ -438,3 +438,31 @@ def test_planner_receives_requested_style():
     run_pipeline(photo_request('athlete'), model, signed_in_history())
     instructions = [step[1] for step in model.seen if step[0] == 'planner']
     assert instructions and all('Requested style: athlete' in text for text in instructions)
+
+
+def test_cancelled_identifier_preserves_timeout(monkeypatch):
+    class SlowIdentifier(ScriptedModel):
+        async def generate_content_async(self, llm_request, stream=False):
+            await asyncio.sleep(10)
+            async for event in super().generate_content_async(llm_request, stream):
+                yield event
+    async def run():
+        payload = photo_request()
+        async with asyncio.timeout(0.03):
+            await s.analyze_meal(payload, s.decode_photo(payload['photo']),
+                                 'cancel-identifier', SlowIdentifier(seen=[]))
+    with pytest.raises(TimeoutError):
+        asyncio.run(run())
+
+
+def test_callbacks_ignore_absent_output():
+    from types import SimpleNamespace
+    context = SimpleNamespace(state={})
+    outputs = {'analysisId': 'missing-output'}
+    identifier = s.identifier_agent(ScriptedModel(), outputs)
+    assert identifier.after_agent_callback(context) is None
+    coach = s.coach_agent(ScriptedModel(), 'casual', outputs)
+    assert coach.after_agent_callback(context) is None
+    planner = s.planner_agent(ScriptedModel(), outputs, signed_in_history())
+    assert asyncio.run(planner.after_agent_callback(context)) is None
+    assert 'report' not in outputs and 'review' not in outputs and 'plan' not in outputs
