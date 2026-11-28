@@ -109,6 +109,40 @@
             },
             "additionalProperties": false
         },
+        "foodCategory": {
+            "type": "string",
+            "enum": [
+                "protein",
+                "grain",
+                "vegetable",
+                "fruit",
+                "dairy",
+                "fat_oil",
+                "sweet",
+                "beverage",
+                "mixed",
+                "other"
+            ]
+        },
+        "estimatedNutrients": {
+            "type": "object",
+            "required": ["fiberGrams", "sugarGrams", "sodiumMilligrams"],
+            "properties": {
+                "fiberGrams": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "sugarGrams": {
+                    "type": "number",
+                    "minimum": 0
+                },
+                "sodiumMilligrams": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
         "food": {
             "type": "object",
             "required": [
@@ -132,6 +166,12 @@
                 },
                 "estimatedMacros": {
                     "$ref": "#/definitions/estimatedMacros"
+                },
+                "category": {
+                    "$ref": "#/definitions/foodCategory"
+                },
+                "estimatedNutrients": {
+                    "$ref": "#/definitions/estimatedNutrients"
                 },
                 "corrected": {
                     "type": "boolean"
@@ -214,6 +254,173 @@
             },
             "additionalProperties": false
         },
+        "dietaryContext": {
+            "type": "object",
+            "required": ["allergies", "cravings"],
+            "properties": {
+                "allergies": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "cravings": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "allergyFlag": {
+            "type": "object",
+            "required": ["allergen", "foodIds", "note"],
+            "properties": {
+                "allergen": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "foodIds": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "note": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "review": {
+            "type": "object",
+            "required": [
+                "healthRating",
+                "healthNote",
+                "suggestedAdditions",
+                "allergyFlags"
+            ],
+            "properties": {
+                "healthRating": {
+                    "enum": ["balanced", "okay", "needs_attention"]
+                },
+                "healthNote": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "suggestedAdditions": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "minLength": 1
+                    }
+                },
+                "allergyFlags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/allergyFlag"
+                    }
+                },
+                "cravingSuggestion": {
+                    "type": "string",
+                    "minLength": 1
+                }
+            },
+            "additionalProperties": false
+        },
+        "fitnessGoal": {
+            "type": "string",
+            "enum": [
+                "lose_weight",
+                "maintain",
+                "build_muscle",
+                "improve_performance",
+                "eat_healthier"
+            ]
+        },
+        "dailyTargets": {
+            "type": "object",
+            "required": [
+                "calories",
+                "proteinGrams",
+                "carbohydrateGrams",
+                "fatGrams",
+                "fiberGrams"
+            ],
+            "properties": {
+                "calories": {
+                    "type": "number",
+                    "minimum": 1000,
+                    "maximum": 5000
+                },
+                "proteinGrams": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 400
+                },
+                "carbohydrateGrams": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 800
+                },
+                "fatGrams": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 300
+                },
+                "fiberGrams": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                }
+            },
+            "additionalProperties": false
+        },
+        "goals": {
+            "type": "object",
+            "required": ["fitnessGoal", "dailyTargets", "weeklyGoals"],
+            "properties": {
+                "fitnessGoal": {
+                    "$ref": "#/definitions/fitnessGoal"
+                },
+                "dailyTargets": {
+                    "$ref": "#/definitions/dailyTargets"
+                },
+                "weeklyGoals": {
+                    "type": "array",
+                    "maxItems": 3,
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 160
+                    }
+                }
+            },
+            "additionalProperties": false
+        },
+        "planUpdate": {
+            "type": "object",
+            "required": ["goals", "reason", "basedOnMealCount"],
+            "properties": {
+                "goals": {
+                    "$ref": "#/definitions/goals"
+                },
+                "reason": {
+                    "type": "string",
+                    "minLength": 1
+                },
+                "basedOnMealCount": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "additionalProperties": false
+        },
         "analysisRequest": {
             "type": "object",
             "required": [
@@ -286,6 +493,9 @@
                         "type": "string"
                     }
                 },
+                "dietaryContext": {
+                    "$ref": "#/definitions/dietaryContext"
+                },
                 "conflicts": {
                     "type": "array",
                     "items": {
@@ -301,12 +511,21 @@
                 "estimatedMacros": {
                     "$ref": "#/definitions/estimatedMacros"
                 },
+                "estimatedNutrients": {
+                    "$ref": "#/definitions/estimatedNutrients"
+                },
                 "macroStatus": {
                     "enum": ["estimated", "pending_recalculation"]
                 },
                 "recommendation": {
                     "type": "string",
                     "minLength": 1
+                },
+                "review": {
+                    "$ref": "#/definitions/review"
+                },
+                "planUpdate": {
+                    "$ref": "#/definitions/planUpdate"
                 },
                 "companionStyle": {
                     "$ref": "#/definitions/companionStyle"
