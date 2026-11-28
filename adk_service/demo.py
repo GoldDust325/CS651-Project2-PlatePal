@@ -12,7 +12,7 @@ from urllib.parse import urlparse
 
 import httpx
 from PIL import Image
-from adk_service.service import FIELDS, STYLES, assemble, coach, validate
+from adk_service.service import FIELDS, OPTIONAL_REPORT_FIELDS, STYLES, assemble, coach, validate
 
 
 def main():
@@ -45,7 +45,7 @@ def main():
         with args.photo.open('rb') as photo:
             response = httpx.post(args.url, headers={'Authorization': 'Bearer ' + token},
                                   files={'photo': ('meal', photo, mime)},
-                                  data={'companionStyle': args.style, 'photoSource': 'local'}, timeout=125,
+                                  data={'companionStyle': args.style, 'photoSource': 'local'}, timeout=200,
                                   trust_env=False)
     except httpx.HTTPError as exc:
         print(json.dumps({'httpStatus': None, 'elapsedMs': round((time.perf_counter()-started)*1000),
@@ -62,16 +62,18 @@ def main():
                     clientSchemaValidation='passed')
     print(json.dumps(evidence))
     print(args.style + ': ' + result['recommendation'])
+    if result.get('review'):
+        print('review: ' + json.dumps(result['review']))
     if args.compare_styles:
-        fixed = {k: result[k] for k in FIELDS}
+        fixed = {k: result[k] for k in FIELDS + OPTIONAL_REPORT_FIELDS if k in result}
         for style in STYLES:
             if style == args.style:
                 continue
-            rec = asyncio.run(coach(fixed, style, str(uuid.uuid4())))
-            alternate = assemble(fixed, style, rec, str(uuid.uuid4()))
+            review = asyncio.run(coach(fixed, style, str(uuid.uuid4())))
+            alternate = assemble(fixed, style, review, str(uuid.uuid4()))
             assert alternate['foods'] == result['foods']
             assert alternate['estimatedMacros'] == result['estimatedMacros']
-            print(style + ': ' + rec)
+            print(style + ': ' + alternate['recommendation'])
         print('All three styles preserved identical foods, quantities and macros.')
 
 
