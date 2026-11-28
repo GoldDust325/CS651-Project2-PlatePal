@@ -13,7 +13,9 @@ const validateAnalysisResponse = ajv.compile({
 });
 
 
-const DEFAULT_TIMEOUT_MS = 30000;
+// The ADK service allows up to 110 seconds (ADK_DEADLINE_SECONDS) for
+// identification plus coaching, so Express must wait slightly longer.
+const DEFAULT_TIMEOUT_MS = 120000;
 
 class AdkClientError extends Error {
   constructor(message, status = 502) {
@@ -23,7 +25,7 @@ class AdkClientError extends Error {
   }
 }
 
-async function analyzeMeal(analysisRequest) {
+async function analyzeMeal(analysisRequest, options = {}) {
   const serviceUrl = process.env.ADK_SERVICE_URL;
 
   if (!serviceUrl) {
@@ -43,12 +45,21 @@ async function analyzeMeal(analysisRequest) {
     timeoutMs
   );
 
+  // AG-03 (#3): forward the signed-in user's Firebase token so the ADK
+  // history tools can read only that user's meals through GET /api/meals.
+  const headers = { "Content-Type": "application/json" };
+
+  if (
+    typeof options.authorization === "string" &&
+    /^Bearer \S+$/.test(options.authorization)
+  ) {
+    headers.Authorization = options.authorization;
+  }
+
   try {
     const response = await fetch(serviceUrl, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify(analysisRequest),
       signal: controller.signal
     });

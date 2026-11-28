@@ -163,3 +163,68 @@ test("Handle ADK request timeout", async () => {
       error.status === 504
   );
 });
+
+// AG-03 (#3): the user's Firebase token reaches the ADK history tools
+test("Forward the user's Bearer token to the ADK service", async () => {
+  process.env.ADK_SERVICE_URL =
+    "http://localhost:8000/analyze";
+
+  global.fetch = async (url, options) => {
+    assert.equal(options.headers.Authorization, "Bearer user-token");
+    assert.equal(options.headers["Content-Type"], "application/json");
+
+    return {
+      ok: true,
+      json: async () => fixtures.validAnalysisResponse
+    };
+  };
+
+  await analyzeMeal(fixtures.validPhotoOnlyRequest, {
+    authorization: "Bearer user-token"
+  });
+});
+
+test("Do not forward a missing or malformed Authorization header", async () => {
+  process.env.ADK_SERVICE_URL =
+    "http://localhost:8000/analyze";
+
+  for (const authorization of [undefined, "", "Basic abc", "Bearer a b"]) {
+    global.fetch = async (url, options) => {
+      assert.equal("Authorization" in options.headers, false);
+
+      return {
+        ok: true,
+        json: async () => fixtures.validAnalysisResponse
+      };
+    };
+
+    await analyzeMeal(fixtures.validPhotoOnlyRequest, { authorization });
+  }
+});
+
+test("Default ADK timeout outlasts the 110 second ADK deadline", async () => {
+  process.env.ADK_SERVICE_URL =
+    "http://localhost:8000/analyze";
+  delete process.env.ADK_TIMEOUT_MS;
+
+  const realSetTimeout = global.setTimeout;
+  let scheduled;
+
+  global.setTimeout = (fn, ms) => {
+    scheduled = ms;
+    return realSetTimeout(() => {}, 0);
+  };
+
+  global.fetch = async () => ({
+    ok: true,
+    json: async () => fixtures.validAnalysisResponse
+  });
+
+  try {
+    await analyzeMeal(fixtures.validPhotoOnlyRequest);
+  } finally {
+    global.setTimeout = realSetTimeout;
+  }
+
+  assert.ok(scheduled > 110000);
+});

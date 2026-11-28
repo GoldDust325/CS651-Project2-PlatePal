@@ -12,6 +12,7 @@ const authPath = require.resolve("../middleware/verifyFirebaseToken");
 const adkPath = require.resolve("../services/adkClient");
 
 let capturedRequest;
+let capturedOptions;
 let simulatedError;
 
 // Mock authentication before importing Express.
@@ -40,8 +41,9 @@ require.cache[adkPath] = {
     filename: adkPath,
     loaded: true,
     exports: {
-        async analyzeMeal(data) {
+        async analyzeMeal(data, options) {
             capturedRequest = data;
+            capturedOptions = options;
 
             if (simulatedError) {
                 throw simulatedError;
@@ -312,4 +314,13 @@ test("POST /api/analyze handles ADK timeouts", async () => {
     } finally {
         simulatedError = undefined;
     }
+});
+
+// AG-03 (#3): the ADK history tools need the caller's own token.
+test("POST /api/analyze passes the caller's token to the ADK client", async () => {
+    simulatedError = undefined;
+    const response = await photoRequest();
+
+    assert.equal(response.status, 200);
+    assert.equal(capturedOptions.authorization, "Bearer test-user");
 });

@@ -1,0 +1,9 @@
+# Author: Shiv Shankar Yadav | Issues: #2 and #4
+google-adk==2.15.0
+google-genai==2.34.0
+fastapi==0.165.0
+uvicorn==0.54.0
+jsonschema==4.26.0
+Pillow==13.0.0
+httpx[socks]==0.28.1
+pytest==9.2.0

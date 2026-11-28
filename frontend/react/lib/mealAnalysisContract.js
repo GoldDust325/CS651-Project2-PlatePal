@@ -45,11 +45,15 @@ export function mapMealAnalysis(data) {
 
   return {
     ...data,
+    // Untouched BE-08 response, used when saving the meal (POST /api/meals).
+    contract: data,
     totals: {
       calories: macros.calories,
       protein: macros.proteinGrams,
       carbs: macros.carbohydrateGrams,
       fat: macros.fatGrams,
+      // Present when the identifier estimated nutrients for every food.
+      fiber: data.estimatedNutrients?.fiberGrams,
     },
     foods: data.foods.map(food => ({
       ...food,
@@ -59,6 +63,21 @@ export function mapMealAnalysis(data) {
       calories: food.estimatedMacros?.calories,
     })),
     recommendations: [data.recommendation],
+    // The coach's structured review, when the ADK service sends one.
+    review: data.review
+      ? {
+          healthRating: data.review.healthRating,
+          healthNote: data.review.healthNote,
+          additions: data.review.suggestedAdditions,
+          allergyFlags: data.review.allergyFlags.map(flag => ({
+            ...flag,
+            foodNames: flag.foodIds
+              .map(id => data.foods.find(food => food.foodId === id)?.name)
+              .filter(Boolean),
+          })),
+          craving: data.review.cravingSuggestion || '',
+        }
+      : null,
   };
 }
 

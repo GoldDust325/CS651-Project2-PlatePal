@@ -28,7 +28,16 @@ users/                            (collection)
         sourceMetadata             (source information, not raw media)
         savedAt
         updatedAt
+    goals/                        (subcollection; added for the ADK Planner)
+      current/                    (single document)
+        fitnessGoal                (lose_weight, maintain, build_muscle, improve_performance, eat_healthier)
+        dailyTargets               (calories, proteinGrams, carbohydrateGrams, fatGrams, fiberGrams)
+        weeklyGoals                (up to 3 strings)
+        source                     (planner or user)
+        updatedAt
 ```
+
+`goals/current` is written only through `PUT /api/goals` (`server/services/firestoreGoals.js`) for the verified UID, after the user saves a meal. See `documentation/AG-ADK-Multi-Agent-Coach.md`.
 
 **Important:** `meals` is a subcollection under `users/{uid}`, **not** a separate top-level collection. `test-user-001` and `test-meal-001` in the Firebase Console are temporary demonstration IDs. Actual profile document IDs must match the authenticated user's Firebase UID.
 

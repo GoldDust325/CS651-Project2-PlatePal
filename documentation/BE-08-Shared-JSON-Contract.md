@@ -58,6 +58,17 @@ Audio duration must be greater than zero and no longer than 60 seconds.
 | corrected | User correction status |
 | corrections | Food and portion correction history |
 
+**Optional fields from the multi-agent coach (still `schemaVersion` 1.0.0).** These were added as optional fields so older responses and saved meals stay valid. Clients that do not know them can ignore them.
+
+| Field | Purpose |
+|---|---|
+| foods[].category | protein, grain, vegetable, fruit, dairy, fat_oil, sweet, beverage, mixed or other |
+| foods[].estimatedNutrients | fiberGrams, sugarGrams, sodiumMilligrams for that food |
+| estimatedNutrients | Meal totals of the above, summed in code when every food has them |
+| dietaryContext | allergies and cravings the user stated in the voice note |
+| review | Coach review: healthRating (balanced, okay, needs_attention), healthNote, suggestedAdditions, allergyFlags (allergen, foodIds, note), optional cravingSuggestion |
+| planUpdate | Planner proposal: goals (fitnessGoal, dailyTargets, weeklyGoals), reason, basedOnMealCount. The `goals` definition is also what `PUT /api/goals` accepts |
+
 ## 5. Companion Styles
 
 The contract supports three standardized companion values:

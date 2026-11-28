@@ -118,3 +118,31 @@ test('preserves Google Photos as the photo source', () => {
   assert.equal(form.get('photoSource'), 'google_photos');
   assert.equal(form.get('companionStyle'), 'strict');
 });
+
+test('maps the coach review and nutrients when present', () => {
+  const data = structuredClone(fixtures.validAnalysisResponse);
+  data.estimatedNutrients = { fiberGrams: 2, sugarGrams: 1, sodiumMilligrams: 110 };
+  data.review = {
+    healthRating: 'okay',
+    healthNote: 'High in protein but no vegetables.',
+    suggestedAdditions: ['broccoli'],
+    allergyFlags: [{ allergen: 'soy', foodIds: ['food-001', 'missing'], note: 'Check the marinade.' }],
+    cravingSuggestion: 'Try a chicken stir-fry.',
+  };
+
+  const result = validateMealAnalysis(data);
+
+  assert.equal(result.totals.fiber, 2);
+  assert.equal(result.review.healthRating, 'okay');
+  assert.deepEqual(result.review.additions, ['broccoli']);
+  assert.deepEqual(result.review.allergyFlags[0].foodNames, ['Grilled chicken']);
+  assert.equal(result.review.craving, 'Try a chicken stir-fry.');
+  assert.equal(result.contract.review, data.review);
+});
+
+test('older responses without a review still map', () => {
+  const result = validateMealAnalysis(fixtures.validAnalysisResponse);
+
+  assert.equal(result.review, null);
+  assert.equal(result.totals.fiber, undefined);
+});

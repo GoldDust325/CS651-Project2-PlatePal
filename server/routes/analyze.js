@@ -89,7 +89,9 @@ if (!["local", "google_photos"].includes(photoSource)) {
             };
         }
 
-        const result = await analyzeMeal(analysisRequest);
+        const result = await analyzeMeal(analysisRequest, {
+            authorization: req.headers.authorization
+        });
         return res.status(200).json(result);
     } catch (error) {
         next(error);
