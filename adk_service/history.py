@@ -10,6 +10,7 @@ class MealHistory:
         self.authorization = authorization
         self.current = current
         self.cache = None
+        self.goals_cache = None
 
     async def get_recent_meals(self) -> dict:
         """Retrieve up to five recent meals belonging to the authenticated caller. No user-ID argument is accepted."""
@@ -47,3 +48,30 @@ class MealHistory:
                     for k in self.current['estimatedMacros']}
         return {'status': 'available', 'sampleCount': len(meals), 'recentMean': averages,
                 'deltas': {k: self.current['estimatedMacros'][k] - v for k, v in averages.items()}}
+
+    async def get_current_goals(self) -> dict:
+        """Return the authenticated caller's current fitness goal, daily targets and weekly goals. No user-ID argument is accepted."""
+        if self.goals_cache is not None:
+            return copy.deepcopy(self.goals_cache)
+        if not self.authorization:
+            self.goals_cache = {'status': 'unavailable', 'goals': None}
+            return copy.deepcopy(self.goals_cache)
+        url = os.getenv('EXPRESS_GOALS_URL', 'http://127.0.0.1:5001/api/goals')
+        target = urlparse(url)
+        if target.scheme != 'https' and not (target.scheme == 'http' and target.hostname in ('127.0.0.1', 'localhost', '::1')):
+            raise ValueError('Goals require HTTPS or loopback')
+        try:
+            async with httpx.AsyncClient(timeout=10, trust_env=False, follow_redirects=False) as client:
+                response = await client.get(url, headers={'Authorization': self.authorization})
+                response.raise_for_status()
+                goals = response.json()['goals']
+            if goals is None:
+                self.goals_cache = {'status': 'empty', 'goals': None}
+            else:
+                self.goals_cache = {'status': 'available', 'goals': {
+                    'fitnessGoal': goals['fitnessGoal'],
+                    'dailyTargets': copy.deepcopy(goals['dailyTargets']),
+                    'weeklyGoals': list(goals['weeklyGoals'])}}
+        except (httpx.HTTPError, ValueError, KeyError, TypeError):
+            self.goals_cache = {'status': 'unavailable', 'goals': None}
+        return copy.deepcopy(self.goals_cache)
